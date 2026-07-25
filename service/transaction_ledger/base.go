@@ -6,10 +6,10 @@ import (
 	"github.com/cchristian77/wallet-service/repository"
 	"github.com/cchristian77/wallet-service/request"
 	"github.com/cchristian77/wallet-service/response"
-	sharedErrs "github.com/cchristian77/wallet-service/shared/errors"
 	"gorm.io/gorm"
 )
 
+// Service defines application logic for wallet-to-wallet transfer (disbursement).
 type Service interface {
 	Transfer(ctx context.Context, input *request.Transfer) (*response.Transfer, error)
 }
@@ -19,15 +19,10 @@ type base struct {
 	writeDB    *gorm.DB
 }
 
+// NewService initializes a new transaction ledger Service instance.
 func NewService(repository repository.Repository, writeDB *gorm.DB) (Service, error) {
 	return &base{
 		repository: repository,
 		writeDB:    writeDB,
 	}, nil
 }
-
-var (
-	TransactionAlreadyProcessedErr = sharedErrs.New(sharedErrs.ErrKindConflict, "Transaction already processed")
-	InsufficientBalanceErr         = sharedErrs.NewBusinessValidationErr("Insufficient balance")
-	SameWalletErr                  = sharedErrs.NewBusinessValidationErr("Cannot transfer to the same wallet")
-)

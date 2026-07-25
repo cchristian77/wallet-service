@@ -97,34 +97,3 @@ func NewWithCause(kind Kind, message string, err error) BaseError {
 		cause:   err,
 	}
 }
-
-func Wrap(err error, ctxInfo string, args ...any) BaseError {
-	ctxInfo = fmt.Sprintf(ctxInfo, args...)
-
-	if f, ok := err.(*baseError); ok {
-		return &baseError{
-			message: f.Message(),
-			kind:    f.Kind(),
-			ctxInfo: ctxInfo,
-			cause:   err,
-		}
-	}
-
-	var message string
-	if err != nil {
-		message = err.Error()
-	}
-
-	return &baseError{
-		message: message,
-		ctxInfo: ctxInfo,
-		cause:   err,
-		kind:    ErrKindUnknown,
-	}
-}
-
-func E(message string, args ...any) error {
-	return &baseError{
-		message: fmt.Sprintf(message, args...),
-	}
-}

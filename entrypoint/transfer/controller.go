@@ -12,12 +12,9 @@ import (
 	"github.com/cchristian77/wallet-service/util/constant"
 )
 
+// Controller manages the transfer/disbursement operations.
 type Controller struct {
 	transactionLedger transactionLedger.Service
-}
-
-func NewController(transactionLedger transactionLedger.Service) *Controller {
-	return &Controller{transactionLedger: transactionLedger}
 }
 
 func (c *Controller) RegisterRoutes(mux *http.ServeMux) {

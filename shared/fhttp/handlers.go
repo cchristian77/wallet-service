@@ -40,7 +40,8 @@ func setHeaders(ctx context.Context, headers HTTPHeaders, w http.ResponseWriter)
 	}
 }
 
-func DefaultHealthCheckHandler(_ *http.Request) (*Response, error) {
+// DefaultHealthCheckHandler Default handler for health check
+func DefaultHealthCheckHandler(r *http.Request) (*Response, error) {
 	return &Response{
 		Data:   "Service is Running.",
 		Status: http.StatusOK,

@@ -14,7 +14,7 @@ import (
 func (r *repo) FindTransactionByTransactionID(ctx context.Context, transactionID string) (*domain.Transaction, error) {
 	var result *domain.Transaction
 
-	db, _ := database.ConnFromContext(ctx, r.DB)
+	db, _ := database.ConnFromCtx(ctx, r.DB)
 
 	err := db.WithContext(ctx).
 		Where("transaction_id = ?", transactionID).
@@ -30,7 +30,7 @@ func (r *repo) FindTransactionByTransactionID(ctx context.Context, transactionID
 }
 
 func (r *repo) CreateTransaction(ctx context.Context, data *domain.Transaction) (*domain.Transaction, error) {
-	db, _ := database.ConnFromContext(ctx, r.DB)
+	db, _ := database.ConnFromCtx(ctx, r.DB)
 
 	err := db.WithContext(ctx).
 		Clauses(clause.Returning{}).
@@ -48,7 +48,7 @@ func (r *repo) CreateTransaction(ctx context.Context, data *domain.Transaction) 
 func (r *repo) UpdateTransactionStatus(ctx context.Context, id uint64, status string) error {
 	var result *domain.Transaction
 
-	db, _ := database.ConnFromContext(ctx, r.DB)
+	db, _ := database.ConnFromCtx(ctx, r.DB)
 
 	err := db.WithContext(ctx).
 		Model(&result).

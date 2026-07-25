@@ -7,11 +7,19 @@ import (
 	"gorm.io/gorm"
 )
 
+// HTTP ERROR
 var (
+	// InternalServerErr will throw if any the Internal Server Error happen
 	InternalServerErr = New(ErrKindHTTP, "Internal Server Error")
-	NotFoundErr       = New(ErrKindDataNotFound, "Requested data is not found")
-	ConflictErr       = New(ErrKindConflict, "Requested data already exist")
-	BadParamInputErr  = New(ErrKindBusinessValidation, "Requested parameters are not valid")
+
+	// NotFoundErr will throw if the requested item is not exists
+	NotFoundErr = New(ErrKindDataNotFound, "Requested data is not found")
+
+	// ConflictErr will throw if the current action already exists
+	ConflictErr = New(ErrKindRepository, "Requested data already exist")
+
+	// BadParamInputErr will throw if the given request-body or params is not valid
+	BadParamInputErr = New(ErrKindBusinessValidation, "Requested parameters are not valid")
 )
 
 func GetStatusCode(err error) int {

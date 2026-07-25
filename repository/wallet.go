@@ -14,7 +14,7 @@ import (
 func (r *repo) FindWalletByID(ctx context.Context, id uint64) (*domain.Wallet, error) {
 	var result *domain.Wallet
 
-	db, _ := database.ConnFromContext(ctx, r.DB)
+	db, _ := database.ConnFromCtx(ctx, r.DB)
 
 	err := db.WithContext(ctx).
 		First(&result, id).
@@ -31,7 +31,7 @@ func (r *repo) FindWalletByID(ctx context.Context, id uint64) (*domain.Wallet, e
 func (r *repo) FindWalletByUserID(ctx context.Context, userID uint64) (*domain.Wallet, error) {
 	var result *domain.Wallet
 
-	db, _ := database.ConnFromContext(ctx, r.DB)
+	db, _ := database.ConnFromCtx(ctx, r.DB)
 
 	err := db.WithContext(ctx).
 		Where("user_id = ?", userID).
@@ -49,7 +49,7 @@ func (r *repo) FindWalletByUserID(ctx context.Context, userID uint64) (*domain.W
 func (r *repo) FindWalletByIDForUpdate(ctx context.Context, id uint64) (*domain.Wallet, error) {
 	var result *domain.Wallet
 
-	db, _ := database.ConnFromContext(ctx, r.DB)
+	db, _ := database.ConnFromCtx(ctx, r.DB)
 
 	err := db.WithContext(ctx).
 		Clauses(clause.Locking{Strength: "UPDATE"}).
@@ -67,7 +67,7 @@ func (r *repo) FindWalletByIDForUpdate(ctx context.Context, id uint64) (*domain.
 func (r *repo) UpdateWalletBalance(ctx context.Context, id uint64, balance int64) error {
 	var result *domain.Wallet
 
-	db, _ := database.ConnFromContext(ctx, r.DB)
+	db, _ := database.ConnFromCtx(ctx, r.DB)
 
 	err := db.WithContext(ctx).
 		Model(&result).

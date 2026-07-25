@@ -14,7 +14,7 @@ import (
 func (r *repo) FindTransactionLedgersByTransactionID(ctx context.Context, transactionID uint64) ([]*domain.TransactionLedger, error) {
 	var result []*domain.TransactionLedger
 
-	db, _ := database.ConnFromContext(ctx, r.DB)
+	db, _ := database.ConnFromCtx(ctx, r.DB)
 
 	err := db.WithContext(ctx).
 		Where("transaction_id = ?", transactionID).
@@ -30,7 +30,7 @@ func (r *repo) FindTransactionLedgersByTransactionID(ctx context.Context, transa
 }
 
 func (r *repo) CreateTransactionLedger(ctx context.Context, data *domain.TransactionLedger) (*domain.TransactionLedger, error) {
-	db, _ := database.ConnFromContext(ctx, r.DB)
+	db, _ := database.ConnFromCtx(ctx, r.DB)
 
 	err := db.WithContext(ctx).
 		Clauses(clause.Returning{}).

@@ -5,10 +5,10 @@ import "github.com/cchristian77/wallet-service/domain/enums"
 type TransactionLedger struct {
 	BaseModel
 
-	TransactionID uint64 `gorm:"index"` // FK → transactions.id (PK)
-	WalletID      uint64
+	TransactionID uint64 `gorm:"index"`
+	WalletID      uint64 `gorm:"index"`
 	Ledger        enums.TransactionLedgerType
-	Reference     enums.TransactionLedgerReference
+	Reference     enums.TransactionLedgerReference `gorm:"index"`
 	Amount        int64
 }
 
