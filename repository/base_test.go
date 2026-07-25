@@ -37,7 +37,7 @@ func (suite *RepositoryTestSuite) Before(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	logger.Initialize()
+	logger.InitializeNop()
 
 	suite.sqlMock = sqlMock
 	suite.repo = NewRepository(writerDB)

@@ -65,12 +65,10 @@ func (r *repo) FindWalletByIDForUpdate(ctx context.Context, id uint64) (*domain.
 }
 
 func (r *repo) UpdateWalletBalance(ctx context.Context, id uint64, balance int64) error {
-	var result *domain.Wallet
-
 	db, _ := database.ConnFromCtx(ctx, r.DB)
 
 	err := db.WithContext(ctx).
-		Model(&result).
+		Model(&domain.Wallet{}).
 		Where("id = ?", id).
 		Update("balance", balance).
 		Error
