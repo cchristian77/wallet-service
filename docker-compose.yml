@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  postgres_db:
+    image: "postgres:14.7"
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: wallet
+    volumes:
+      - type: volume
+        source: db_wallet_vol
+        target: "/var/lib/postgresql/data"
+        read_only: false
+
+#  pgadmin:
+#    image: "dpage/pgadmin4:latest"
+#    environment:
+#      - PGADMIN_DEFAULT_EMAIL=admin@domain.com
+#      - PGADMIN_DEFAULT_PASSWORD=password
+#    ports:
+#      - "5050:80"
+
+volumes:
+  db_wallet_vol:
+    name: db_wallet_vol
