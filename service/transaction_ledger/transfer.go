@@ -23,8 +23,9 @@ var (
 func (b *base) Transfer(ctx context.Context, input *request.Transfer) (*response.Transfer, error) {
 	logger.Info(ctx, "Transfer with req: %v", input)
 
+	// 1. Verify to avoid transferring to the same account
 	if input.From == input.To {
-		logger.Warn(ctx, "transfer rejected: same wallet id %d", input.From)
+		logger.Warn(ctx, "Transfer rejected. You cannot transfer to the same wallet.", input.From)
 		return nil, sameWalletErr
 	}
 
@@ -37,17 +38,19 @@ func (b *base) Transfer(ctx context.Context, input *request.Transfer) (*response
 		}
 	}()
 
+	// 2. Verify if the transaction is already processed before by checking idempotency key
 	logger.Debug(ctx, "[TRANSFER] checking whether transaction with idempotency key %s already exists ...", input.IdempotencyKey)
 	transactionExists, err := b.repository.FindTransactionByTransactionID(tCtx, input.IdempotencyKey)
 	if err != nil && !errors.Is(err, sharedErrs.NotFoundErr) {
 		return nil, err
 	}
 	if transactionExists != nil {
-		logger.Warn(ctx, "[TRANSFER] transaction %s with idempotency key %s already processed",
+		logger.Warn(ctx, "[TRANSFER] transaction %d with idempotency key %s already processed",
 			transactionExists.ID, transactionExists.TransactionID)
 		return nil, transactionAlreadyProcessedErr
 	}
 
+	// 3. Insert the transaction data with idempotency key as the transaction ID
 	logger.Info(ctx, "[TRANSFER] creating transaction with idempotency key %s ...", input.IdempotencyKey)
 	transaction, err := b.repository.CreateTransaction(tCtx, &domain.Transaction{
 		TransactionID: input.IdempotencyKey,
@@ -57,7 +60,7 @@ func (b *base) Transfer(ctx context.Context, input *request.Transfer) (*response
 		return nil, err
 	}
 
-	// Lock wallets in ascending ID order to avoid deadlocks (A→B vs B→A).
+	// 4. Lock involved wallets in ascending orders to avoid deadlock
 	firstID, secondID := input.From, input.To
 	if firstID > secondID {
 		firstID, secondID = secondID, firstID
@@ -86,6 +89,7 @@ func (b *base) Transfer(ctx context.Context, input *request.Transfer) (*response
 		fromWallet, toWallet = secondWallet, firstWallet
 	}
 
+	// 5. Verify if the source wallet has sufficient balance to transfer
 	logger.Info(ctx, "[TRANSFER] source wallet %d initial balance: %d to wallet %d initial balance: %d with transfer amount: %d",
 		fromWallet.ID, fromWallet.Balance, toWallet.ID, toWallet.Balance, input.Amount)
 	if fromWallet.Balance < input.Amount {
@@ -94,6 +98,7 @@ func (b *base) Transfer(ctx context.Context, input *request.Transfer) (*response
 		return nil, insufficientBalanceErr
 	}
 
+	// 6. Create transaction ledgers: CREDIT for the source & DEBIT for the destination wallets
 	logger.Info(ctx, "[TRANSFER] creating CREDIT ledger for wallet %d with amount %d ...", toWallet.ID, input.Amount)
 	_, err = b.repository.CreateTransactionLedger(tCtx, &domain.TransactionLedger{
 		TransactionID: transaction.ID,
@@ -118,19 +123,21 @@ func (b *base) Transfer(ctx context.Context, input *request.Transfer) (*response
 		return nil, err
 	}
 
+	// 7. Update the final balance for the source and destination wallets
 	fromWallet.Balance -= input.Amount
 	toWallet.Balance += input.Amount
 
-	logger.Info(ctx, "[TRANSFER]  source wallet %s to final balance %d...", fromWallet.ID, fromWallet.Balance)
+	logger.Info(ctx, "[TRANSFER] updating source wallet %d to final balance %d...", fromWallet.ID, fromWallet.Balance)
 	if err = b.repository.UpdateWalletBalance(tCtx, fromWallet.ID, fromWallet.Balance); err != nil {
 		return nil, err
 	}
 
-	logger.Info(ctx, "[TRANSFER] updating designated wallet %s to final balance %d...", fromWallet.ID, fromWallet.Balance)
+	logger.Info(ctx, "[TRANSFER] updating designated wallet %d to final balance %d...", toWallet.ID, toWallet.Balance)
 	if err = b.repository.UpdateWalletBalance(tCtx, toWallet.ID, toWallet.Balance); err != nil {
 		return nil, err
 	}
 
+	// 8. Update the transaction's status upon transfer completion
 	logger.Info(ctx, "[TRANSFER] updating transaction %d to SUCCESS ...", transaction.ID)
 	if err = b.repository.UpdateTransactionStatus(tCtx, transaction.ID, enums.TransactionStatusSuccess.String()); err != nil {
 		return nil, err

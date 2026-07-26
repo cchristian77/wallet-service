@@ -26,6 +26,12 @@ func openDB(dsn string) (*sql.DB, error) {
 		return nil, err
 	}
 
+	// Limit open connections so concurrent transfers (each holding a TX) do not
+	// exhaust PostgreSQL max_connections (default often 100).
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(25)
+	db.SetConnMaxLifetime(5 * time.Minute)
+
 	return db, nil
 }
 

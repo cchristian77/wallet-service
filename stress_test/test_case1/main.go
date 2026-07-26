@@ -14,8 +14,13 @@ import (
 
 /*
 This program is a lightweight concurrent stress test for the transfer (disbursement) API.
-It fires N parallel POST /transfers/v1 requests against a local wallet-service instance,
-tracks success/failure counts, and reports average response time.
+
+It fires 100 parallel POST /transfers/v1 requests that always debit wallet 1 (seed balance 10000)
+with amount 1000 toward a random different wallet.
+
+Under correct locking, the expected result should be:
+1. wallet 1 with balance of 10000, 10 request with transfer amount 1000 should be successful to transfer to other wallets.
+2. the remaining 90 requests should fail with insufficient balance, without corrupted balances or unbalanced ledgers.
 */
 
 // TransferRequest the request payload for POST /transfers/v1.
@@ -50,7 +55,7 @@ func main() {
 
 			startTime := time.Now()
 
-			// Always debit wallet 1; credit a random different wallet (1–3 from seed data).
+			// Always debit wallet 1 (initial balance 10000); credit a random different wallet (2 or 3).
 			from := uint64(1)
 			to := uint64(rand.Intn(3) + 1)
 			for to == from {
