@@ -1,0 +1,192 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Wallet Service",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/transfers/v1": {
+      "post": {
+        "summary": "Transfer",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "content-length": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "136"
+              },
+              "correlation-id": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "1327194d-f172-483e-a1f6-2bc841cb1192"
+              },
+              "date": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Sun, 26 Jul 2026 06:26:14 GMT"
+              }
+            },
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": {
+                    "transaction_id": "TRX-007",
+                    "from_balance": 10100,
+                    "to_balance": 4900,
+                    "amount": 100,
+                    "status": "SUCCESS"
+                  },
+                  "message": "OK",
+                  "status": 200
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error | Insufficient Balance",
+            "headers": {
+              "content-length": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "136"
+              },
+              "correlation-id": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "1661b352-31eb-4e2f-bc8d-d75ef9e97931"
+              },
+              "date": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Sun, 26 Jul 2026 06:28:45 GMT"
+              }
+            },
+            "content": {
+              "application/json": {
+                "example": {
+                  "kind": "business_validation_error",
+                  "message": "Insufficient balance",
+                  "reference_id": "1661b352-31eb-4e2f-bc8d-d75ef9e97931",
+                  "status": 400
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error | Wallet not found",
+            "headers": {
+              "content-length": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "134"
+              },
+              "correlation-id": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "1782486d-2583-4a0b-80b7-1c8fec0bce5e"
+              },
+              "date": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Sun, 26 Jul 2026 06:28:04 GMT"
+              }
+            },
+            "content": {
+              "application/json": {
+                "example": {
+                  "kind": "data_not_found_error",
+                  "message": "Wallet id 999 not found",
+                  "reference_id": "1782486d-2583-4a0b-80b7-1c8fec0bce5e",
+                  "status": 404
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error | Transaction Alrady Processed",
+            "headers": {
+              "content-length": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "134"
+              },
+              "correlation-id": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "2851d7da-6654-4ee8-a719-fa94019c8aa3"
+              },
+              "date": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Sun, 26 Jul 2026 06:27:18 GMT"
+              }
+            },
+            "content": {
+              "application/json": {
+                "example": {
+                  "kind": "conflict_error",
+                  "message": "Transaction already processed",
+                  "reference_id": "2851d7da-6654-4ee8-a719-fa94019c8aa3",
+                  "status": 409
+                }
+              }
+            }
+          }
+        },
+        "operationId": "Transfer",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "TRX-010"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "from": 1,
+                "to": 2,
+                "amount": 100
+              }
+            }
+          }
+        }
+      }
+    },
+    "/healthcheck": {
+      "get": {
+        "summary": "Healthcheck",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        },
+        "operationId": "Healthcheck"
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:9000"
+    }
+  ]
+}
