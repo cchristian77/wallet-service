@@ -15,6 +15,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
+// openDB opens a database connection using pgx driver
 func openDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
@@ -28,6 +29,7 @@ func openDB(dsn string) (*sql.DB, error) {
 	return db, nil
 }
 
+// OpenGormDB initializes a gorm.DB instance from sql.DB
 func OpenGormDB(sqlDB *sql.DB) (*gorm.DB, error) {
 	return gorm.Open(postgres.New(postgres.Config{
 		Conn: sqlDB,
@@ -36,10 +38,15 @@ func OpenGormDB(sqlDB *sql.DB) (*gorm.DB, error) {
 	})
 }
 
+// ConnectToDB establishes a connection to the PostgreSQL database using the configured DSN and retries on failure.
 func ConnectToDB() *sql.DB {
 	var counts int
+
+	// get dsn from env.json
 	dsn := config.Env().DSN()
 
+	// get dsn from docker
+	//dsn := os.Getenv("DSN")
 	for {
 		connection, err := openDB(dsn)
 		if err != nil {

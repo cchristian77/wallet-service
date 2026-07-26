@@ -38,7 +38,7 @@ type (
 	}
 )
 
-func LoadConfig() error {
+func LoadEnv() error {
 	k := koanf.New(".")
 
 	if err := k.Load(file.Provider("./env.json"), json.Parser()); err != nil {

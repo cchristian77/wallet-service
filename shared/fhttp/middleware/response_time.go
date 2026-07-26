@@ -9,6 +9,7 @@ import (
 
 const timeFormat = "2006-01-02 15:04:05.000000"
 
+// ResponseTime - Middleware to log the response time for each request made
 func ResponseTime(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()

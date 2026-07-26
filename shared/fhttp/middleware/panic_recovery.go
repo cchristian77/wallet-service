@@ -15,7 +15,7 @@ func PanicRecovery(next http.Handler) http.Handler {
 			if p := recover(); p != nil {
 				ctx := r.Context()
 				logger.Error(ctx, "Panic: %v, Panic stacktrace: \n %v", p, string(debug.Stack()))
-				fhttp.WriteErrorResponse(ctx, fmt.Errorf("Internal Server 	Error. Panic Error : %v", p), w)
+				fhttp.WriteErrorResponse(ctx, fmt.Errorf("Internal Server Error. Panic Error : %v", p), w)
 			}
 		}()
 

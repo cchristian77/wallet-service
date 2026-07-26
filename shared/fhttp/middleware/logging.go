@@ -32,8 +32,9 @@ func LogRequest(next http.Handler) http.Handler {
 		} else {
 			logger.Info(ctx, "Received Request from URL: %v, with body: %v", r.URL.Path, string(body))
 		}
-		_ = r.Body.Close()
+		r.Body.Close()
 
+		// Reset the body to its original state
 		r.Body = io.NopCloser(bytes.NewReader(body))
 		next.ServeHTTP(w, r)
 	})
@@ -43,12 +44,13 @@ func LogResponse(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		if config.Env() != nil && config.Env().App.Env == "production" {
+		if config.Env().App.Env == "production" {
 			h.ServeHTTP(w, r)
 			return
 		}
 
-		rec := &loggingResponseWriter{ResponseWriter: w, Status: http.StatusOK}
+		// Recorder will hijack the Response Writer, and store the response for logging purposes
+		rec := &loggingResponseWriter{ResponseWriter: w}
 		h.ServeHTTP(rec, r)
 
 		statusCode := rec.Status
@@ -67,6 +69,9 @@ func LogResponse(h http.Handler) http.Handler {
 	})
 }
 
+// loggingResponseWriter is a struct that will store the response for logging purposes.
+// This should be disabled in production setup. This is only for debugging purposes.
+// Performance is not guaranteed, as appending the body will cause memory allocation and is not optimized
 type loggingResponseWriter struct {
 	http.ResponseWriter
 	Status int

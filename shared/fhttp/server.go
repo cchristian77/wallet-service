@@ -21,7 +21,7 @@ type Server struct {
 	exit    chan os.Signal
 }
 
-// NewHTTPServer creates an HTTP server for the given handler (e.g. ServeMux + middleware).
+// NewHTTPServer creates an HTTP server for the given handler e.g., ServeMux with middlewares.
 func NewHTTPServer(handler http.Handler, opts ...Option) (*Server, error) {
 	options := &serverOptions{
 		serverStopTimeoutSeconds: defaultStopTimeoutSeconds,
@@ -61,42 +61,47 @@ func NewHTTPServer(handler http.Handler, opts ...Option) (*Server, error) {
 	}, nil
 }
 
-// Start listens until SIGINT/SIGTERM, then shuts down gracefully.
-func (s *Server) Start(_ context.Context) error {
+// Start - Starts the http server
+func (s *Server) Start(ctx context.Context) (err error) {
 	logger.L().Info(fmt.Sprintf("Starting Http Server at {%v}....", s.server.Addr))
 
 	timeout := time.Duration(s.options.serverStopTimeoutSeconds) * time.Second
+
 	idleConnClosed := make(chan struct{})
 
+	// For graceful shutdown
 	go func() {
 		signal.Notify(s.exit, os.Interrupt, syscall.SIGTERM)
 
 		sig := <-s.exit
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), timeout)
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
 
 		logger.L().Info(fmt.Sprintf("Received signal {%v}, shutting down HTTP Server....", sig.String()))
 
-		if err := s.server.Shutdown(shutdownCtx); err != nil {
+		if err = s.server.Shutdown(ctx); err != nil {
 			logger.L().Error(fmt.Sprintf("Error while shutting down HTTP server: %v", err))
 		}
 
 		close(idleConnClosed)
 	}()
 
-	var err error
+	// Start the server
+	// here, we use a different var `serveErr` as ListenAndServe() always returns a non-nil error, and we want to
+	// return the error only if it's not http.ErrServerClosed
 	if serveErr := s.server.ListenAndServe(); !errors.Is(serveErr, http.ErrServerClosed) {
 		logger.L().Error(fmt.Sprintf("Error starting up Http Server. Error: %v", serveErr.Error()))
 		err = serveErr
 	}
 
+	// Wait for the shutdown process to complete
 	<-idleConnClosed
 
 	return err
 }
 
-// Stop triggers graceful shutdown.
-func (s *Server) Stop(_ context.Context) {
+// Stop stops the server
+func (s *Server) Stop(ctx context.Context) {
 	logger.L().Info("Shutting down Http Server....")
 	s.exit <- os.Interrupt
 }
