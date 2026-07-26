@@ -151,7 +151,7 @@ func doTransfer(body *TransferRequest) (*TransferResponse, error) {
 		return nil, fmt.Errorf("JSON marshal error: %w", err)
 	}
 
-	endpoint := fmt.Sprintf("%s/transfers/v1", url)
+	endpoint := fmt.Sprintf("%s/api/transfers/v1", url)
 	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(bodyBytes))
 	if err != nil {
 		return nil, fmt.Errorf("request creation error: %w", err)

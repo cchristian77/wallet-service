@@ -47,9 +47,13 @@ func NewHTTPServer(handler http.Handler, opts ...Option) (*Server, error) {
 		return nil, errors.New("handler should not be nil")
 	}
 
+	router := http.NewServeMux()
+	router.Handle("GET /healthcheck", AppHandler(DefaultHealthCheckHandler))
+	router.Handle("/", handler)
+
 	httpServer := &http.Server{
 		Addr:              fmt.Sprintf(":%v", config.Env().App.Port),
-		Handler:           handler,
+		Handler:           router,
 		ReadTimeout:       time.Duration(options.readTimeoutSeconds) * time.Second,
 		ReadHeaderTimeout: time.Duration(options.readHeaderTimeoutSeconds) * time.Second,
 	}

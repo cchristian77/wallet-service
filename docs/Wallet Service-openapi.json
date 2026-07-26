@@ -6,7 +6,7 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/transfers/v1": {
+    "/api/transfers/v1": {
       "post": {
         "summary": "Transfer",
         "responses": {
@@ -49,33 +49,34 @@
             }
           },
           "400": {
-            "description": "Error | Insufficient Balance",
+            "description": "Error | Idempotency-Key is Required",
             "headers": {
               "content-length": {
                 "schema": {
                   "type": "string"
                 },
-                "example": "136"
+                "example": "162"
               },
               "correlation-id": {
                 "schema": {
                   "type": "string"
                 },
-                "example": "1661b352-31eb-4e2f-bc8d-d75ef9e97931"
+                "example": "85ee919c-98c6-4830-bbd5-d03efb04fb45"
               },
               "date": {
                 "schema": {
                   "type": "string"
                 },
-                "example": "Sun, 26 Jul 2026 06:28:45 GMT"
+                "example": "Sun, 26 Jul 2026 17:01:39 GMT"
               }
             },
             "content": {
               "application/json": {
                 "example": {
-                  "kind": "business_validation_error",
-                  "message": "Insufficient balance",
-                  "reference_id": "1661b352-31eb-4e2f-bc8d-d75ef9e97931",
+                  "kind": "validation_error",
+                  "message": "Idempotency-Key header is required",
+                  "optional_data": null,
+                  "reference_id": "85ee919c-98c6-4830-bbd5-d03efb04fb45",
                   "status": 400
                 }
               }
@@ -156,7 +157,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "TRX-010"
+            "example": "TRX-001"
           }
         ],
         "requestBody": {

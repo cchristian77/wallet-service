@@ -8,8 +8,8 @@ import (
 	"github.com/cchristian77/wallet-service/entrypoint/transfer"
 	"github.com/cchristian77/wallet-service/repository"
 	"github.com/cchristian77/wallet-service/shared/external/database"
-	"github.com/cchristian77/wallet-service/shared/fhttp"
 	"github.com/cchristian77/wallet-service/shared/fhttp/middleware"
+	"github.com/cchristian77/wallet-service/util/config"
 	"github.com/cchristian77/wallet-service/util/logger"
 )
 
@@ -50,20 +50,24 @@ func StartControllers(mux *http.ServeMux) error {
 }
 
 func Initialize() http.Handler {
-	mux := http.NewServeMux()
+	router := http.NewServeMux()
 
-	mux.Handle("GET /healthcheck", fhttp.AppHandler(fhttp.DefaultHealthCheckHandler))
-
-	// Register Middlewares
-	var handler http.Handler = mux
+	var handler http.Handler = router
 	handler = middleware.LogResponse(handler)
 	handler = middleware.LogRequest(handler)
 	handler = middleware.PanicRecovery(handler)
 	handler = middleware.ResponseTime(handler)
 	handler = middleware.CorrelationID(handler)
 
-	if err := StartControllers(mux); err != nil {
+	subRouter := http.NewServeMux()
+	if err := StartControllers(subRouter); err != nil {
 		logger.L().Fatal(fmt.Sprintf("failed to start controllers: %v", err))
+	}
+
+	if apiPrefix := config.Env().App.APIPrefix; apiPrefix != "" {
+		router.Handle(apiPrefix+"/", http.StripPrefix(apiPrefix, subRouter))
+	} else {
+		router.Handle("/", subRouter)
 	}
 
 	return handler

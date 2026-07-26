@@ -80,7 +80,7 @@ Before running the application, you need to setup the necessary prerequisites, a
 2. Transfer (disbursement) endpoint </br>
    ```bash
    curl --request POST \
-     --url http://localhost:9000/transfers/v1 \
+     --url http://localhost:9000/api/transfers/v1 \
      --header 'content-type: application/json' \
      --header 'Idempotency-Key: TRX-DEMO-1' \
      --data '{
