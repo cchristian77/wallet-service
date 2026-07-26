@@ -1,0 +1,313 @@
+{
+  "v": 12,
+  "name": "Wallet Service",
+  "folders": [],
+  "requests": [
+    {
+      "v": "17",
+      "name": "Transfer",
+      "method": "POST",
+      "endpoint": "<<base_url>>/transfers/v1",
+      "params": [],
+      "headers": [
+        {
+          "key": "Idempotency-Key",
+          "value": "TRX-010",
+          "active": true,
+          "description": ""
+        }
+      ],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "inherit",
+        "authActive": true
+      },
+      "body": {
+        "contentType": "application/json",
+        "body": "{\n  \"from\": 1, \t\t\n  \"to\": 2,\n  \"amount\": 100\n}"
+      },
+      "requestVariables": [],
+      "responses": {
+        "Error | Transaction Alrady Processed": {
+          "name": "Error | Transaction Alrady Processed",
+          "originalRequest": {
+            "v": "6",
+            "name": "Transfer",
+            "method": "POST",
+            "endpoint": "<<base_url>>/transfers/v1",
+            "headers": [
+              {
+                "key": "Idempotency-Key",
+                "value": "TRX-007",
+                "active": true,
+                "description": ""
+              }
+            ],
+            "params": [],
+            "body": {
+              "contentType": "application/json",
+              "body": "{\n  \"from\": 1, \t\t\n  \"to\": 999,\n  \"amount\": 100\n}"
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "Conflict",
+          "code": 409,
+          "headers": [
+            {
+              "key": "content-length",
+              "value": "134"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json"
+            },
+            {
+              "key": "correlation-id",
+              "value": "2851d7da-6654-4ee8-a719-fa94019c8aa3"
+            },
+            {
+              "key": "date",
+              "value": "Sun, 26 Jul 2026 06:27:18 GMT"
+            }
+          ],
+          "body": "{\"kind\":\"conflict_error\",\"message\":\"Transaction already processed\",\"reference_id\":\"2851d7da-6654-4ee8-a719-fa94019c8aa3\",\"status\":409}"
+        },
+        "Success": {
+          "name": "Success",
+          "originalRequest": {
+            "v": "6",
+            "name": "Transfer",
+            "method": "POST",
+            "endpoint": "<<base_url>>/transfers/v1",
+            "headers": [
+              {
+                "key": "Idempotency-Key",
+                "value": "TRX-007",
+                "active": true,
+                "description": ""
+              }
+            ],
+            "params": [],
+            "body": {
+              "contentType": "application/json",
+              "body": "{\n  \"from\": 1, \n  \"to\": 2,\n  \"amount\": 100\n}"
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "OK",
+          "code": 200,
+          "headers": [
+            {
+              "key": "content-length",
+              "value": "136"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json"
+            },
+            {
+              "key": "correlation-id",
+              "value": "1327194d-f172-483e-a1f6-2bc841cb1192"
+            },
+            {
+              "key": "date",
+              "value": "Sun, 26 Jul 2026 06:26:14 GMT"
+            }
+          ],
+          "body": "{\"data\":{\"transaction_id\":\"TRX-007\",\"from_balance\":10100,\"to_balance\":4900,\"amount\":100,\"status\":\"SUCCESS\"},\"message\":\"OK\",\"status\":200}"
+        },
+        "Error | Same Wallet": {
+          "name": "Error | Same Wallet",
+          "originalRequest": {
+            "v": "6",
+            "name": "Transfer",
+            "method": "POST",
+            "endpoint": "<<base_url>>/transfers/v1",
+            "headers": [
+              {
+                "key": "Idempotency-Key",
+                "value": "TRX-007",
+                "active": true,
+                "description": ""
+              }
+            ],
+            "params": [],
+            "body": {
+              "contentType": "application/json",
+              "body": "{\n  \"from\": 1, \n  \"to\": 1,\n  \"amount\": 100\n}"
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "headers": [
+            {
+              "key": "content-length",
+              "value": "150"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json"
+            },
+            {
+              "key": "correlation-id",
+              "value": "4284b005-84de-424c-9d85-28f45c9fd09e"
+            },
+            {
+              "key": "date",
+              "value": "Sun, 26 Jul 2026 06:26:40 GMT"
+            }
+          ],
+          "body": "{\"kind\":\"business_validation_error\",\"message\":\"Cannot transfer to the same wallet\",\"reference_id\":\"4284b005-84de-424c-9d85-28f45c9fd09e\",\"status\":400}"
+        },
+        "Error | Wallet not found": {
+          "name": "Error | Wallet not found",
+          "originalRequest": {
+            "v": "6",
+            "name": "Transfer",
+            "method": "POST",
+            "endpoint": "<<base_url>>/transfers/v1",
+            "headers": [
+              {
+                "key": "Idempotency-Key",
+                "value": "TRX-010",
+                "active": true,
+                "description": ""
+              }
+            ],
+            "params": [],
+            "body": {
+              "contentType": "application/json",
+              "body": "{\n  \"from\": 1, \t\t\n  \"to\": 999,\n  \"amount\": 100\n}"
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "Not Found",
+          "code": 404,
+          "headers": [
+            {
+              "key": "content-length",
+              "value": "134"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json"
+            },
+            {
+              "key": "correlation-id",
+              "value": "1782486d-2583-4a0b-80b7-1c8fec0bce5e"
+            },
+            {
+              "key": "date",
+              "value": "Sun, 26 Jul 2026 06:28:04 GMT"
+            }
+          ],
+          "body": "{\"kind\":\"data_not_found_error\",\"message\":\"Wallet id 999 not found\",\"reference_id\":\"1782486d-2583-4a0b-80b7-1c8fec0bce5e\",\"status\":404}"
+        },
+        "Error | Insufficient Balance": {
+          "name": "Error | Insufficient Balance",
+          "originalRequest": {
+            "v": "6",
+            "name": "Transfer",
+            "method": "POST",
+            "endpoint": "<<base_url>>/transfers/v1",
+            "headers": [
+              {
+                "key": "Idempotency-Key",
+                "value": "TRX-010",
+                "active": true,
+                "description": ""
+              }
+            ],
+            "params": [],
+            "body": {
+              "contentType": "application/json",
+              "body": "{\n  \"from\": 1, \t\t\n  \"to\": 2,\n  \"amount\": 99999\n}"
+            },
+            "auth": {
+              "authType": "none",
+              "authActive": true
+            },
+            "requestVariables": []
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "headers": [
+            {
+              "key": "content-length",
+              "value": "136"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json"
+            },
+            {
+              "key": "correlation-id",
+              "value": "1661b352-31eb-4e2f-bc8d-d75ef9e97931"
+            },
+            {
+              "key": "date",
+              "value": "Sun, 26 Jul 2026 06:28:45 GMT"
+            }
+          ],
+          "body": "{\"kind\":\"business_validation_error\",\"message\":\"Insufficient balance\",\"reference_id\":\"1661b352-31eb-4e2f-bc8d-d75ef9e97931\",\"status\":400}"
+        }
+      },
+      "description": null
+    },
+    {
+      "v": "17",
+      "name": "Healthcheck",
+      "method": "GET",
+      "endpoint": "<<base_url>>/healthcheck",
+      "params": [],
+      "headers": [],
+      "preRequestScript": "",
+      "testScript": "",
+      "auth": {
+        "authType": "inherit",
+        "authActive": true
+      },
+      "body": {
+        "contentType": null,
+        "body": null
+      },
+      "requestVariables": [],
+      "responses": {},
+      "description": null
+    }
+  ],
+  "auth": {
+    "authActive": true,
+    "authType": "none"
+  },
+  "headers": [],
+  "variables": [
+    {
+      "key": "base_url",
+      "secret": false,
+      "initialValue": "http://localhost:9000",
+      "currentValue": ""
+    }
+  ],
+  "description": "",
+  "preRequestScript": "",
+  "testScript": ""
+}
