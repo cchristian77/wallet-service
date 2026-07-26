@@ -25,7 +25,7 @@ func (b *base) Transfer(ctx context.Context, input *request.Transfer) (*response
 
 	// 1. Verify to avoid transferring to the same account
 	if input.From == input.To {
-		logger.Warn(ctx, "Transfer rejected. You cannot transfer to the same wallet.", input.From)
+		logger.Warn(ctx, "Transfer rejected. You cannot transfer to the same wallet.")
 		return nil, sameWalletErr
 	}
 
@@ -50,7 +50,7 @@ func (b *base) Transfer(ctx context.Context, input *request.Transfer) (*response
 		return nil, transactionAlreadyProcessedErr
 	}
 
-	// 3. Insert the transaction data with idempotency key as the transaction ID
+	// 3. Insert the transaction data with an idempotency key as the transaction ID
 	logger.Info(ctx, "[TRANSFER] creating transaction with idempotency key %s ...", input.IdempotencyKey)
 	transaction, err := b.repository.CreateTransaction(tCtx, &domain.Transaction{
 		TransactionID: input.IdempotencyKey,

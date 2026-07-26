@@ -51,6 +51,7 @@ func (suite *TransactionLedgerServiceTestSuite) Before(t *testing.T) {
 
 	logger.InitializeNop()
 
+	suite.ctx = context.Background()
 	suite.repo = m.NewMockRepository(ctrl)
 	suite.writeDB, suite.sqlMock, err = m.NewMockDB()
 	if err != nil {
