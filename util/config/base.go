@@ -26,6 +26,7 @@ type (
 	}
 
 	DatabaseConfig struct {
+		Driver   string `env:"driver"`
 		Host     string `env:"host"`
 		Port     int32  `env:"port"`
 		User     string `env:"user"`

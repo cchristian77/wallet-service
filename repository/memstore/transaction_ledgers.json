@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "transaction_id": 1,
+    "wallet_id": 1,
+    "ledger": "CREDIT",
+    "reference": "TOP_UP",
+    "amount": 10000
+  },
+  {
+    "id": 2,
+    "transaction_id": 2,
+    "wallet_id": 2,
+    "ledger": "CREDIT",
+    "reference": "TOP_UP",
+    "amount": 5000
+  },
+  {
+    "id": 3,
+    "transaction_id": 3,
+    "wallet_id": 3,
+    "ledger": "CREDIT",
+    "reference": "TOP_UP",
+    "amount": 2500
+  }
+]

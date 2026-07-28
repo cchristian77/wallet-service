@@ -7,9 +7,11 @@ import (
 
 	"github.com/cchristian77/wallet-service/entrypoint/transfer"
 	"github.com/cchristian77/wallet-service/repository"
+	"github.com/cchristian77/wallet-service/repository/memstore"
 	"github.com/cchristian77/wallet-service/shared/external/database"
 	"github.com/cchristian77/wallet-service/shared/fhttp"
 	"github.com/cchristian77/wallet-service/shared/fhttp/middleware"
+	"github.com/cchristian77/wallet-service/util/config"
 	"github.com/cchristian77/wallet-service/util/logger"
 )
 
@@ -20,6 +22,11 @@ type Controller interface {
 
 func StartControllers(mux *http.ServeMux) error {
 	logger.L().Info("Registering routes for controllers ...")
+
+	var (
+		repo repository.Repository
+		err  error
+	)
 
 	ctx := context.Background()
 
@@ -34,8 +41,18 @@ func StartControllers(mux *http.ServeMux) error {
 		logger.L().Fatal(fmt.Sprintf("gorm driver error: %v", err))
 	}
 
-	// Initialize repository layer
-	repo := repository.NewRepository(gormDB)
+	// Switch repository instance based on the config's driver
+	if driver := config.Env().Database.Driver; driver == "memstore" {
+		logger.L().Info("using in-memory MemStore repository")
+
+		repo, err = memstore.NewSeededMemStore()
+		if err != nil {
+			return fmt.Errorf("memstore seed: %w", err)
+		}
+	} else {
+		repo = repository.NewRepository(gormDB)
+		logger.L().Info("using Postgres repository")
+	}
 
 	// Initialize controller layer
 	transferController, err := transfer.NewController(ctx, repo, gormDB)

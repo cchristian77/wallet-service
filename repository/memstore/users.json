@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "full_name": "Justin Bieber",
+    "email": "justin@example.com",
+    "password": "password"
+  },
+  {
+    "id": 2,
+    "full_name": "Taylor Swift",
+    "email": "taylor@example.com",
+    "password": "password"
+  },
+  {
+    "id": 3,
+    "full_name": "Ed Sheeran",
+    "email": "ed@example.com",
+    "password": "password"
+  }
+]
