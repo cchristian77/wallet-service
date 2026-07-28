@@ -116,13 +116,14 @@ Before running the application, you need to setup the necessary prerequisites, a
 In a concurrent environment, multiple clients may attempt to transfer from the same wallet simultaneously,
 which may lead to race condition issue on wallet balances. </br>
 
-To prevent this, I serialize access to the transfer process using PostgreSQL row-level locks inside a single database transaction
-to ensure an atomic (all-or-nothing) operation. The service claims the request via `Idempotency-Key`, locks both wallets with
-`SELECT … FOR UPDATE` in **ascending wallet ID order** (to avoid A→B vs B→A deadlocks), validates balance, writes DEBIT/CREDIT
-ledgers, updates balances, then commits. On failure before commit, the transaction is rolled back. </br>
+To prevent this, I serialize access to the transfer process using PostgreSQL row-level locks inside a single database transaction. 
+The service claims the request via `Idempotency-Key`, locks both wallets with `SELECT … FOR UPDATE` in **ascending wallet ID order**, validates balance, writes DEBIT/CREDIT
+ledgers, updates balances, then commits. On failure, the transaction is rolled back to ensure atomic (all-or-nothing) operations. </br>
 
-This approach eliminates race conditions on balances by enforcing that only one transfer mutates a given wallet at a time,
-while keeping the solution self-contained in PostgreSQL without an external lock store. <br>
+Because the lock is row-level, concurrent transfers that share any wallet wait until the current lock is released;
+while non-overlapping wallet pairs proceed without waiting. </br>
+
+This approach eliminates race conditions by ensuring only one transfer mutates a given wallet at a time. <br>
 
 Please check `docs/SOLUTION.md` for the detailed solution. </br>
 

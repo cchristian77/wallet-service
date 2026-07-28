@@ -16,17 +16,18 @@ to ensure an atomic (all-or-nothing) operation.
 When a client attempts a disbursement, the system does the following: </br>
 
 1. Insert a `transactions` row with the `Idempotency-Key` as `transaction_id` with `PENDING` status to claim the request.
-2. Lock sender (`from`) and recipient (`to`) wallets with `SELECT … FOR UPDATE` in **ascending  order by Wallet ID** to avoid deadlocks when concurrent transfers run in opposite directions (A→B vs B→A).
+2. Lock sender (`from`) and recipient (`to`) wallets with `SELECT … FOR UPDATE` in **ascending wallet ID order** so opposite-direction transfers (A→B vs B→A)
+   by making the order of the locks in a uniform manner across all pairs.
 3. Validate that the source wallet has sufficient balance.
-4. Write entries to `transaction_ledgers` : DEBIT for the sender and CREDIT for the recipient.
-5. Update both wallet final balances.
-6. Mark the transaction as `SUCCESS` and commit the DB Transaction. </br>
+4. Write entries to `transaction_ledgers`: DEBIT for the sender and CREDIT for the recipient.
+5. Update both wallet balances.
+6. Mark the transaction as `SUCCESS` and commit. </br>
 
-Concurrent requests that touch the same wallet wait on the row lock; on failure before commit, the transaction is rolled back,
-so either the full transfer is persisted or nothing is applied. </br>
+Because the lock is row-level, concurrent transfers that share any wallet wait until that lock is released -
+same pair or overlapping pairs (e.g. `1→2` behind `1→3` on wallet `1`). Fully disjoint pairs (e.g. `1→2` and `3→4`) proceed in parallel.
+On failure before commit, the transaction is rolled back so the transfer is all-or-nothing. </br>
 
-This approach eliminates race conditions on balances by enforcing that only one transfer mutates a given wallet pair at a time,
-while keeping the solution self-contained in PostgreSQL without an external lock store. </br>
+This approach eliminates race conditions on balances by enforcing that only one transfer mutates a given wallet pair at a time/
 
 ### Consideration 
 - For money transfer, **correct balances and consistency matter more than latency** - 
@@ -41,10 +42,10 @@ while keeping the solution self-contained in PostgreSQL without an external lock
 I made 2 stress tests to verify the efficiency and correctness of my solution: </br>
 
 1. Test case 1 (`stress_test/test_case1/main.go`): sending 100 requests concurrently to transfer from wallet 1 (seed balance 10000) with amount 1000 to a random different wallet. </br>
-   The result: **10 success & 90 failed requests** (due to insufficient balance after the sender is drained) with average latency of ~250ms, without corrupted balances or unbalanced ledgers.
+   The result: **10 success & 90 failed requests** (due to insufficient balance after the sender is drained) with the average latency of ~250ms, without corrupted balances or unbalanced ledgers.
 
 2. Test case 2 (`stress_test/test_case2/main.go`): sending 100 requests concurrently that alternate opposite directions (wallet 1→2 and wallet 2→1) to verify deadlock prevention. </br>
-   The result: **100 success & 0 failed requests** (due to temporary insufficient balance as funds move both ways) and **0 timeouts** (no deadlock occurred) with average latency of ~400ms. </br>
+   The result: **100 success & 0 failed requests** and **0 timeouts** (no deadlock occurred) with the average latency of ~400ms. </br>
 
 ### Alternative
 Optimistic Locking </br>
@@ -69,7 +70,7 @@ Distributed Lock (e.g. Redis) per wallet pair </br>
 - Extra dependency (TTL/outage risks); balances still require an atomic DB update as source of truth.
 
 ### Further Improvement
-1. Persist `FAILED` status on business failures (e.g. insufficient balance) instead of only rolling back the `PENDING` claim, so the transfer outcome is durable.
+1. Persist `FAILED` status on business failures (e.g., insufficient balance) instead of only rolling back the `PENDING` claim, so the transfer outcome is durable.
 2. Add `external_wallet_id` (UUID) for data exchange between external systems instead of relying on internal auto-increment IDs.
 3. Add wallet statement / ledger history endpoints for reconciliation and support debugging.
 4. Add metrics (lock wait time, transfer success rate) and tighter DB timeouts under contention.
