@@ -6,7 +6,7 @@ import (
 	"github.com/cchristian77/wallet-service/repository"
 	"github.com/cchristian77/wallet-service/request"
 	"github.com/cchristian77/wallet-service/response"
-	"gorm.io/gorm"
+	"github.com/cchristian77/wallet-service/shared/external/database"
 )
 
 // Service defines application logic for wallet-to-wallet transfer (disbursement).
@@ -16,13 +16,13 @@ type Service interface {
 
 type base struct {
 	repository repository.Repository
-	writeDB    *gorm.DB
+	transactor database.Transactor
 }
 
 // NewService initializes a new transaction ledger Service instance.
-func NewService(repository repository.Repository, writeDB *gorm.DB) (Service, error) {
+func NewService(repository repository.Repository, transactor database.Transactor) (Service, error) {
 	return &base{
 		repository: repository,
-		writeDB:    writeDB,
+		transactor: transactor,
 	}, nil
 }

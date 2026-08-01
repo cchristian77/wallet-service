@@ -24,45 +24,46 @@ func StartControllers(mux *http.ServeMux) error {
 	logger.L().Info("Registering routes for controllers ...")
 
 	var (
-		repo repository.Repository
-		err  error
+		repo       repository.Repository
+		transactor database.Transactor
+		err        error
 	)
 
 	ctx := context.Background()
+	driver := config.Env().Database.Driver
 
-	// initialize DB
-	db := database.ConnectToDB()
-	if db == nil {
-		logger.L().Fatal("Can't connect to Postgres!")
-	}
-
-	gormDB, err := database.OpenGormDB(db)
-	if err != nil {
-		logger.L().Fatal(fmt.Sprintf("gorm driver error: %v", err))
-	}
-
-	// Switch repository instance based on the config's driver
-	if driver := config.Env().Database.Driver; driver == "memstore" {
+	switch driver {
+	case "memstore", "memory":
 		logger.L().Info("using in-memory MemStore repository")
 
-		repo, err = memstore.NewSeededMemStore()
-		if err != nil {
-			return fmt.Errorf("memstore seed: %w", err)
+		store, seedErr := memstore.NewSeededMemStore()
+		if seedErr != nil {
+			return fmt.Errorf("memstore seed: %w", seedErr)
 		}
-	} else {
+		repo = store
+		transactor = store
+	default:
+		db := database.ConnectToDB()
+		if db == nil {
+			logger.L().Fatal("Can't connect to Postgres!")
+		}
+
+		gormDB, gormErr := database.OpenGormDB(db)
+		if gormErr != nil {
+			logger.L().Fatal(fmt.Sprintf("gorm driver error: %v", gormErr))
+		}
+
 		repo = repository.NewRepository(gormDB)
+		transactor = database.NewGormTransactor(gormDB)
 		logger.L().Info("using Postgres repository")
 	}
 
-	// Initialize controller layer
-	transferController, err := transfer.NewController(ctx, repo, gormDB)
+	transferController, err := transfer.NewController(ctx, repo, transactor)
 	if err != nil {
 		return err
 	}
 
-	// register routes
 	transferController.RegisterRoutes(mux)
-
 	return nil
 }
 

@@ -10,7 +10,6 @@ import (
 	"github.com/cchristian77/wallet-service/request"
 	"github.com/cchristian77/wallet-service/response"
 	sharedErrs "github.com/cchristian77/wallet-service/shared/errors"
-	"github.com/cchristian77/wallet-service/shared/external/database"
 	"github.com/cchristian77/wallet-service/util/logger"
 )
 
@@ -31,10 +30,10 @@ func (b *base) Transfer(ctx context.Context, input *request.Transfer) (*response
 
 	var err error
 
-	tCtx, tx := database.InitTx(ctx, b.writeDB)
+	tCtx, tx := b.transactor.Begin(ctx)
 	defer func() {
-		if err = tx.Rollback().Error; err != nil && !errors.Is(err, sql.ErrTxDone) {
-			logger.Error(ctx, "Repository Error on executing b.Transfer: ROLLBACK TXN: %v", err)
+		if rbErr := tx.Rollback(); rbErr != nil && !errors.Is(rbErr, sql.ErrTxDone) {
+			logger.Error(ctx, "Repository Error on executing b.Transfer: ROLLBACK TXN: %v", rbErr)
 		}
 	}()
 
@@ -144,7 +143,7 @@ func (b *base) Transfer(ctx context.Context, input *request.Transfer) (*response
 	}
 	transaction.Status = enums.TransactionStatusSuccess
 
-	if err = tx.Commit().Error; err != nil {
+	if err = tx.Commit(); err != nil {
 		logger.Error(ctx, "Repository Error on executing b.Transfer: COMMIT TXN: %v", err)
 		return nil, err
 	}

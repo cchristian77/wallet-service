@@ -54,6 +54,7 @@ func (s *MemStore) loadSeed() error {
 	if err := s.loadTransactionLedgers(); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -64,8 +65,8 @@ func (s *MemStore) loadUsers() error {
 	}
 
 	now := time.Now()
-
 	var lastID uint64
+
 	for _, row := range rows {
 		s.users[row.ID] = &domain.User{
 			BaseModel: domain.BaseModel{
@@ -82,19 +83,19 @@ func (s *MemStore) loadUsers() error {
 		}
 	}
 	s.nextUserID = lastID + 1
+
 	return nil
 }
 
 func (s *MemStore) loadWallets() error {
 	var rows []walletSeed
-
 	if err := decodeSeed("wallets.json", &rows); err != nil {
 		return err
 	}
 
 	now := time.Now()
-
 	var lastID uint64
+
 	for _, row := range rows {
 		s.wallets[row.ID] = &domain.Wallet{
 			BaseModel: domain.BaseModel{
@@ -111,6 +112,7 @@ func (s *MemStore) loadWallets() error {
 		}
 	}
 	s.nextWalletID = lastID + 1
+
 	return nil
 }
 
@@ -121,8 +123,8 @@ func (s *MemStore) loadTransactions() error {
 	}
 
 	now := time.Now()
-
 	var lastID uint64
+
 	for _, row := range rows {
 		s.transactions[row.ID] = &domain.Transaction{
 			BaseModel: domain.BaseModel{
@@ -139,6 +141,7 @@ func (s *MemStore) loadTransactions() error {
 		}
 	}
 	s.nextTxnID = lastID + 1
+
 	return nil
 }
 
@@ -149,8 +152,8 @@ func (s *MemStore) loadTransactionLedgers() error {
 	}
 
 	now := time.Now()
-
 	var lastID uint64
+
 	for _, row := range rows {
 		s.ledgers[row.ID] = &domain.TransactionLedger{
 			BaseModel: domain.BaseModel{
@@ -169,7 +172,6 @@ func (s *MemStore) loadTransactionLedgers() error {
 			lastID = row.ID
 		}
 	}
-
 	s.nextLedgerID = lastID + 1
 
 	return nil
@@ -183,5 +185,6 @@ func decodeSeed(name string, dest any) error {
 	if err := json.Unmarshal(b, dest); err != nil {
 		return fmt.Errorf("memstore: parse %s: %w", name, err)
 	}
+
 	return nil
 }

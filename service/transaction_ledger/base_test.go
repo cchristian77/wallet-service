@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	m "github.com/cchristian77/wallet-service/mock"
+	"github.com/cchristian77/wallet-service/shared/external/database"
 	"github.com/cchristian77/wallet-service/util/logger"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -24,7 +25,7 @@ func TestNewService_Success(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	transactionLedgerService, err := NewService(repoMock, writeDB)
+	transactionLedgerService, err := NewService(repoMock, database.NewGormTransactor(writeDB))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +59,7 @@ func (suite *TransactionLedgerServiceTestSuite) Before(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	suite.transactionLedgerService, err = NewService(suite.repo, suite.writeDB)
+	suite.transactionLedgerService, err = NewService(suite.repo, database.NewGormTransactor(suite.writeDB))
 	if err != nil {
 		t.Fatal(err)
 	}

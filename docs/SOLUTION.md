@@ -46,6 +46,11 @@ I made 2 stress tests to verify the efficiency and correctness of my solution: <
 2. Test case 2 (`stress_test/test_case2/main.go`): sending 100 requests concurrently that alternate opposite directions (wallet 1→2 and wallet 2→1) to verify deadlock prevention. </br>
    The result: **100 success & 0 failed requests** (due to temporary insufficient balance as funds move both ways) and **0 timeouts** (no deadlock occurred) with average latency of ~400ms. </br>
 
+### Experimentation
+For experimentation, I also implemented an in-memory `MemStore` on branch `feat/memstore` (enable with `database.driver = "memstore"` / `"memory"`).
+`Begin` holds a store-wide mutex for the whole transfer (Commit/Rollback releases it), so check-then-write stays atomic without Postgres — same idea as locking across an entire in-memory `Post`.
+Stress test case 1 under MemStore: **10 success & 90 failed** (insufficient balance); case 2: **0 timeouts** (no deadlock).
+
 ### Alternative
 Optimistic Locking </br>
 **Pros**

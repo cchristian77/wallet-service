@@ -6,13 +6,13 @@ import (
 
 	"github.com/cchristian77/wallet-service/repository"
 	transactionLedger "github.com/cchristian77/wallet-service/service/transaction_ledger"
+	"github.com/cchristian77/wallet-service/shared/external/database"
 	"github.com/cchristian77/wallet-service/util/logger"
-	"gorm.io/gorm"
 )
 
 // NewController initializes a new Controller instance.
-func NewController(ctx context.Context, repository repository.Repository, writerDB *gorm.DB) (*Controller, error) {
-	transactionLedgerService, err := transactionLedger.NewService(repository, writerDB)
+func NewController(ctx context.Context, repository repository.Repository, transactor database.Transactor) (*Controller, error) {
+	transactionLedgerService, err := transactionLedger.NewService(repository, transactor)
 	if err != nil {
 		logger.L().Fatal(fmt.Sprintf("transaction_ledger service initialization error: %v", err))
 	}
